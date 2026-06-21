@@ -5,7 +5,6 @@ import ckan.plugins.toolkit as toolkit
 from ckanext.package_group_permissions import helpers
 
 _ = toolkit._
-g = toolkit.g
 
 
 class PackageGroupPermissionsPlugin(plugins.SingletonPlugin):
@@ -37,7 +36,14 @@ class PackageGroupPermissionsPlugin(plugins.SingletonPlugin):
         :return:
         """
         authorized = False
-        if g.controller in ['package', 'dataset'] and g.action in ['groups']:
+        # CKAN 2.10 (Flask) removed the Pylons request attrs g.controller/g.action.
+        # Use toolkit.get_endpoint() -> (blueprint, view). Wrapped in try/except so
+        # non-request contexts (CLI, background jobs) fall back to next_auth.
+        try:
+            blueprint, view = toolkit.get_endpoint()
+        except Exception:
+            blueprint, view = (None, None)
+        if blueprint in ('package', 'dataset') and view == 'groups':
             authorized = helpers.user_has_admin_access(include_editor_access=True)
 
         if not authorized:

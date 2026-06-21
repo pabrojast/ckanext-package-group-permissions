@@ -16,7 +16,8 @@
   {% block link %}
     {{ super() }}
   {% endblock %}
-  {% if group.user_member or (h.check_access('member_delete', group) and c.controller in ['package', 'dataset'] and c.action in ['groups']) %}
+  {# CKAN 2.10 (Flask): c.controller/c.action (Pylons) were removed. request.endpoint is 'dataset.groups' on the dataset's groups page. #}
+  {% if group.user_member or (h.check_access('member_delete', group) and request.endpoint and request.endpoint.endswith('.groups')) %}
     <input name="group_remove.{{ group.id }}" value="{{ _('Remove') }}" type="submit" class="btn btn-danger btn-sm media-edit" title="{{ _('Remove dataset from this group') }}"/>
   {% endif %}
 {% endblock %}
